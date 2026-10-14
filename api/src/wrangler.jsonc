@@ -1,1 +1,5 @@
-
+{
+  "name": "nexus-ai",
+  "main": "index.js",
+  "compatibility_date": "2026-10-14"
+}
