@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#09090f" />
+  <title>NEXUS — Tu inteligencia artificial</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09090f;
+      --panel: #11111b;
+      --border: #29283b;
+      --purple: #9b70ff;
+      --text: #f5f3ff;
+      --muted: #a5a1b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% 0%, #24143e 0%, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #09090fcc;
+    }
+
+    .logo {
+      width: 43px;
+      height: 43px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #b58aff, #6834c8);
+      color: white;
+      font-size: 23px;
+      font-weight: 900;
+      box-shadow: 0 0 25px #9860ff35;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      letter-spacing: 3px;
+      margin: 0;
+    }
+
+    .brand p {
+      font-size: 12px;
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-left: auto;
+      font-size: 12px;
+      color: #bba2ff;
+    }
+
+    main {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 30px 20px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .welcome {
+      text-align: center;
+      margin: 35px 0 28px;
+    }
+
+    .orb {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #e3cfff, #9b70ff 35%, #4a2388 75%);
+      box-shadow: 0 0 55px #8b5cf655;
+    }
+
+    .welcome h2 {
+      font-size: clamp(27px, 5vw, 38px);
+      margin: 0 0 12px;
+    }
+
+    .welcome h2 span {
+      color: var(--purple);
+    }
+
+    .welcome p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    #chat {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding-bottom: 20px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 14px 17px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #33234f;
+      border-color: #594080;
+      border-bottom-right-radius: 5px;
+    }
+
+    .assistant {
+      align-self: flex-start;
+      background: var(--panel);
+      border-bottom-left-radius: 5px;
+    }
+
+    .error {
+      color: #ffaaaa;
+    }
+
+    .composer {
+      position: sticky;
+      bottom: 0;
+      padding: 12px 0 8px;
+      background: linear-gradient(transparent, var(--bg) 20%);
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: #13131e;
+      border: 1px solid #38334c;
+      border-radius: 18px;
+      box-shadow: 0 10px 40px #0005;
+    }
+
+    textarea {
+      flex: 1;
+      min-width: 0;
+      resize: none;
+      max-height: 150px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      padding: 9px 5px;
+    }
+
+    textarea::placeholder {
+      color: #77738b;
+    }
+
+    button {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--purple);
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #b092ff;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .hint {
+      text-align: center;
+      color: #77738b;
+      font-size: 11px;
+      margin: 12px 0 0;
+    }
+
+    @media (max-width: 520px) {
+      header {
+        padding: 15px;
+      }
+
+      main {
+        padding: 20px 14px;
+      }
+
+      .message {
+        max-width: 94%;
+      }
+
+      .welcome {
+        margin-top: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">N</div>
+    <div class="brand">
+      <h1>NEXUS</h1>
+      <p>Tu espacio de inteligencia artificial</p>
+    </div>
+    <div class="status">● En línea</div>
+  </header>
+
+  <main>
+    <section class="welcome" id="welcome">
+      <div class="orb"></div>
+      <h2>¿Qué vamos a <span>crear hoy?</span></h2>
+      <p>Soy NEXUS. Pregunta, aprende, imagina.<br />Empecemos por algo grande.</p>
+    </section>
+
+    <section id="chat" aria-live="polite"></section>
+
+    <div class="composer">
+      <form id="chat-form">
+        <textarea
+          id="message"
+          rows="1"
+          maxlength="4000"
+          placeholder="Escribe tu mensaje a NEXUS..."
+          aria-label="Tu mensaje"
+          required
+        ></textarea>
+        <button id="send" type="submit" aria-label="Enviar mensaje">↑</button>
+      </form>
+      <p class="hint">NEXUS puede equivocarse. Comprueba la información importante.</p>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("message");
+    const send = document.getElementById("send");
+    const chat = document.getElementById("chat");
+    const welcome = document.getElementById("welcome");
+
+    function addMessage(text, role, isError = false) {
+      const bubble = document.createElement("div");
+      bubble.className = `message ${role}${isError ? " error" : ""}`;
+      bubble.textContent = text;
+      chat.appendChild(bubble);
+      bubble.scrollIntoView({ behavior: "smooth", block: "end" });
+      return bubble;
+    }
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 150) + "px";
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const message = input.value.trim();
+      if (!message || send.disabled) return;
+
+      welcome.hidden = true;
+      addMessage(message, "user");
+
+      input.value = "";
+      input.style.height = "auto";
+      send.disabled = true;
+
+      const loading = addMessage("NEXUS está pensando...", "assistant");
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        loading.remove();
+
+        if (!response.ok) {
+          throw new Error(data.error || "No pude responder.");
+        }
+
+        addMessage(data.reply, "assistant");
+      } catch (error) {
+        loading.remove();
+        addMessage(
+          error.message || "No se pudo conectar con NEXUS. Inténtalo otra vez.",
+          "assistant",
+          true
+        );
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>
