@@ -2,542 +2,475 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#09090f" />
-  <title>NEXUS — Tu inteligencia artificial</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b12">
+  <title>NEXUS AI</title>
 
   <style>
     :root {
       color-scheme: dark;
-      --bg: #09090f;
-      --panel: #11111b;
-      --panel-2: #171522;
-      --border: #29283b;
-      --purple: #9b70ff;
-      --text: #f5f3ff;
-      --muted: #a5a1b8;
-      --danger: #ff7777;
+      --bg: #090b12;
+      --panel: #111522;
+      --panel2: #191f30;
+      --border: #292f43;
+      --text: #f3f5ff;
+      --muted: #9ba4bb;
+      --accent: #8b7cff;
+      --accent2: #6554e8;
+      --danger: #ff667d;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      height: 100vh;
       height: 100dvh;
       overflow: hidden;
-      background:
-        radial-gradient(ellipse at 50% 0%, #24143e 0%, transparent 48%),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
       font-family: Inter, system-ui, -apple-system, sans-serif;
     }
 
-    button, textarea { font: inherit; }
-    button { color: inherit; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
 
     .app {
-      display: flex;
-      width: 100%;
-      height: 100%;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      height: 100dvh;
     }
 
     .sidebar {
-      width: 285px;
-      flex: 0 0 285px;
       display: flex;
       flex-direction: column;
-      background: #0b0a12;
-      border-right: 1px solid var(--border);
-      padding: 17px 13px;
       min-height: 0;
+      padding: 20px 14px;
+      background: #0d101a;
+      border-right: 1px solid var(--border);
     }
 
-    .side-top {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 3px 5px 19px;
+      gap: 11px;
+      padding: 4px 8px 22px;
     }
 
     .logo {
-      width: 42px;
-      height: 42px;
-      flex-shrink: 0;
       display: grid;
       place-items: center;
+      width: 40px;
+      height: 40px;
       border-radius: 13px;
-      background: linear-gradient(135deg, #b58aff, #6834c8);
-      font-size: 23px;
+      background: linear-gradient(135deg, #a398ff, #6251e9);
+      color: white;
       font-weight: 900;
-      box-shadow: 0 0 25px #9860ff35;
+      font-size: 20px;
+      box-shadow: 0 5px 24px #7665ff30;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 19px;
-      letter-spacing: 3px;
-    }
-
-    .brand p {
-      margin: 3px 0 0;
-      font-size: 11px;
-      color: var(--muted);
-    }
+    .brand h1 { margin: 0; font-size: 19px; letter-spacing: 1px; }
+    .brand small { color: var(--muted); font-size: 11px; }
 
     .new-chat {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #49366c;
+      padding: 13px;
+      border: 1px solid #8879ff66;
       border-radius: 12px;
-      background: #211832;
+      background: #7665ff17;
+      color: white;
       text-align: left;
-      cursor: pointer;
       transition: background .2s;
     }
 
-    .new-chat:hover { background: #302044; }
+    .new-chat:hover { background: #7665ff30; }
 
-    .section-label {
-      margin: 23px 8px 10px;
+    .history-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 25px 5px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .small-button {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: transparent;
       color: var(--muted);
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.3px;
-      text-transform: uppercase;
     }
+
+    .small-button:hover { color: var(--danger); }
 
     .history {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .history-empty {
-      padding: 10px 8px;
-      color: #77738b;
-      font-size: 12px;
-      line-height: 1.6;
     }
 
     .history-item {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 3px;
+      gap: 5px;
+      margin-bottom: 5px;
+      padding: 4px;
       border-radius: 10px;
-      border: 1px solid transparent;
     }
 
-    .history-item.active {
-      background: #1c1729;
-      border-color: #352748;
-    }
+    .history-item.active { background: var(--panel2); }
 
-    .open-chat {
+    .history-open {
       flex: 1;
       min-width: 0;
       padding: 9px 7px;
+      overflow: hidden;
       border: 0;
       background: transparent;
+      color: var(--text);
       text-align: left;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .chat-title {
-      display: block;
-      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 13px;
     }
 
-    .chat-date {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
     .delete-chat {
-      width: 32px;
-      height: 34px;
       flex-shrink: 0;
+      padding: 7px;
       border: 0;
-      border-radius: 8px;
+      border-radius: 7px;
       background: transparent;
-      color: #8c879e;
-      cursor: pointer;
+      color: var(--muted);
     }
 
-    .delete-chat:hover {
-      color: var(--danger);
-      background: #352027;
+    .delete-chat:hover { background: #ff667d18; color: var(--danger); }
+
+    .empty-history {
+      padding: 12px 7px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
     }
 
-    .side-bottom {
+    .sidebar-footer {
+      padding: 15px 7px 0;
       border-top: 1px solid var(--border);
-      padding-top: 12px;
-      margin-top: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
     }
 
-    .delete-all {
-      width: 100%;
-      padding: 9px;
-      border: 0;
-      border-radius: 9px;
-      background: transparent;
-      color: #c4a4ad;
-      font-size: 12px;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .delete-all:hover {
-      background: #271820;
-      color: #ffaaaa;
-    }
-
-    .storage-note {
-      padding: 8px 9px 0;
-      color: #77738b;
-      font-size: 10px;
-      line-height: 1.5;
-    }
-
-    .workspace {
-      flex: 1;
-      min-width: 0;
-      height: 100%;
+    .main {
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      height: 100dvh;
     }
 
-    header {
-      min-height: 68px;
-      padding: 12px 22px;
-      border-bottom: 1px solid var(--border);
+    .topbar {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
-      background: #09090fcc;
+      padding: 17px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #0b0e17;
     }
+
+    .topbar-title { font-size: 14px; font-weight: 650; }
+    .status { color: #7fe0b0; font-size: 12px; }
 
     .menu-button {
       display: none;
-      width: 40px;
-      height: 40px;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 9px;
+      padding: 8px 10px;
       background: var(--panel);
-      cursor: pointer;
+      color: white;
     }
 
-    .header-title {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .status {
-      margin-left: auto;
-      color: #bba2ff;
-      font-size: 12px;
-    }
-
-    main {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 18px 24px 12px;
-    }
-
-    .welcome {
-      text-align: center;
-      margin: auto 0;
-      padding: 24px 0;
-    }
-
-    .orb {
-      width: 68px;
-      height: 68px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #e3cfff, #9b70ff 35%, #4a2388 75%);
-      box-shadow: 0 0 55px #8b5cf655;
-    }
-
-    .welcome h2 {
-      font-size: clamp(27px, 4vw, 38px);
-      margin: 0 0 12px;
-    }
-
-    .welcome h2 span { color: var(--purple); }
-
-    .welcome p {
-      color: var(--muted);
-      line-height: 1.7;
-      margin: 0;
-    }
-
-    #chat {
+    .chat {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 17px;
-      padding: 12px 0 22px;
       scroll-behavior: smooth;
     }
 
-    .message {
-      max-width: 85%;
-      padding: 13px 16px;
+    .chat-inner {
+      width: min(800px, 100%);
+      margin: 0 auto;
+      padding: 30px 24px 40px;
+    }
+
+    .welcome {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 50px 15px;
+    }
+
+    .welcome-logo {
+      display: grid;
+      place-items: center;
+      width: 72px;
+      height: 72px;
+      margin-bottom: 22px;
+      border: 1px solid #a398ff55;
+      border-radius: 23px;
+      background: linear-gradient(145deg, #9284ff30, #6554e820);
+      color: #b9b0ff;
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .welcome h2 { margin: 0 0 12px; font-size: clamp(25px, 4vw, 36px); }
+    .welcome p { max-width: 450px; margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 27px;
+    }
+
+    .suggestion {
+      padding: 10px 13px;
       border: 1px solid var(--border);
-      border-radius: 17px;
-      line-height: 1.7;
-      overflow-wrap: anywhere;
-      white-space: pre-wrap;
-    }
-
-    .message.user {
-      align-self: flex-end;
-      background: #33234f;
-      border-color: #594080;
-      border-bottom-right-radius: 5px;
-    }
-
-    .message.assistant {
-      align-self: flex-start;
+      border-radius: 11px;
       background: var(--panel);
-      border-bottom-left-radius: 5px;
+      color: #dce0f3;
+      font-size: 12px;
     }
 
-    .message.error { color: #ffaaaa; }
+    .suggestion:hover { border-color: var(--accent); }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      margin: 0 0 25px;
+      align-items: flex-start;
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: var(--panel2);
+      color: #c3baff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .message.user .avatar {
+      background: #6554e8;
+      color: white;
+    }
+
+    .message-body { min-width: 0; flex: 1; padding-top: 3px; }
+    .message-name { margin-bottom: 7px; font-size: 12px; font-weight: 750; }
+    .message-text { color: #e0e4f2; line-height: 1.75; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .message.error .message-text { color: #ff9aaa; }
+
+    .composer-area {
+      padding: 14px 22px 18px;
+      background: linear-gradient(transparent, var(--bg) 20%);
+    }
 
     .composer {
-      flex-shrink: 0;
-      padding: 10px 0 4px;
-      background: linear-gradient(transparent, var(--bg) 18%);
-    }
-
-    form {
       display: flex;
+      align-items: flex-end;
       gap: 10px;
-      padding: 9px;
-      background: #13131e;
-      border: 1px solid #38334c;
+      width: min(800px, 100%);
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid #343b53;
       border-radius: 17px;
-      box-shadow: 0 10px 40px #0005;
+      background: #131725;
+      box-shadow: 0 10px 40px #0002;
     }
 
-    textarea {
+    .composer:focus-within { border-color: #8b7cffaa; }
+
+    #messageInput {
       flex: 1;
       min-width: 0;
+      max-height: 180px;
+      padding: 9px 8px;
       resize: none;
-      max-height: 150px;
+      outline: none;
       border: 0;
-      outline: 0;
       background: transparent;
-      color: var(--text);
-      padding: 10px 5px;
+      color: white;
       line-height: 1.5;
     }
 
-    textarea::placeholder { color: #77738b; }
+    #messageInput::placeholder { color: #7f879e; }
 
-    .send {
-      width: 46px;
-      min-width: 46px;
-      height: 46px;
+    .send-button {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
       border: 0;
-      border-radius: 13px;
-      background: var(--purple);
-      font-size: 22px;
-      cursor: pointer;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 19px;
+      font-weight: 800;
     }
 
-    .send:hover { background: #b092ff; }
+    .send-button:hover { background: var(--accent2); }
+    .send-button:disabled { opacity: .5; cursor: not-allowed; }
 
-    .send:disabled {
-      opacity: .5;
-      cursor: wait;
-    }
-
-    .hint {
+    .disclaimer {
+      width: min(800px, 100%);
+      margin: 10px auto 0;
+      color: #747d94;
       text-align: center;
-      color: #77738b;
       font-size: 10px;
-      line-height: 1.5;
-      margin: 10px 0 0;
     }
 
-    .mobile-overlay { display: none; }
+    .overlay { display: none; }
 
-    @media (max-width: 700px) {
+    @media (max-width: 760px) {
+      .app { grid-template-columns: minmax(0, 1fr); }
+
       .sidebar {
         position: fixed;
-        inset: 0 auto 0 0;
         z-index: 20;
-        width: min(300px, 86vw);
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(290px, 85vw);
         transform: translateX(-105%);
-        transition: transform .2s ease;
-        box-shadow: 15px 0 50px #0006;
+        transition: transform .22s ease;
+        box-shadow: 15px 0 45px #0005;
       }
 
       .sidebar.open { transform: translateX(0); }
 
-      .mobile-overlay.visible {
-        display: block;
+      .overlay {
         position: fixed;
+        z-index: 15;
         inset: 0;
-        z-index: 19;
         background: #0009;
       }
 
-      .menu-button { display: block; }
-
-      header { padding: 10px 13px; }
-
-      main { padding: 12px 13px 9px; }
-
-      .message { max-width: 94%; }
-
-      .welcome { margin: auto 0; }
-
-      .header-title {
-        max-width: 45vw;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
+      .overlay.visible { display: block; }
+      .menu-button { display: inline-block; }
+      .topbar { padding: 13px 15px; }
+      .chat-inner { padding: 25px 16px 35px; }
+      .composer-area { padding: 10px 12px 13px; }
+      .welcome { padding: 35px 5px; }
+      .suggestions { gap: 7px; }
+      .suggestion { font-size: 11px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="mobile-overlay" id="mobile-overlay"></div>
-
   <div class="app">
     <aside class="sidebar" id="sidebar">
-      <div class="side-top">
+      <div class="brand">
         <div class="logo">N</div>
-        <div class="brand">
-          <h1>NEXUS</h1>
-          <p>Tu espacio de inteligencia artificial</p>
+        <div>
+          <h1>NEXUS AI</h1>
+          <small>Tu espacio inteligente</small>
         </div>
       </div>
 
-      <button class="new-chat" id="new-chat" type="button">
-        ＋ &nbsp; Nuevo chat
-      </button>
+      <button class="new-chat" id="newChatButton">＋ Nuevo chat</button>
 
-      <div class="section-label">Tus conversaciones</div>
+      <div class="history-heading">
+        <span>Historial</span>
+        <button class="small-button" id="clearAllButton">Borrar todo</button>
+      </div>
+
       <div class="history" id="history"></div>
 
-      <div class="side-bottom">
-        <button class="delete-all" id="delete-all" type="button">
-          🗑 &nbsp; Eliminar todo el historial
-        </button>
-        <div class="storage-note">
-          Tus conversaciones se guardan en este navegador.
-        </div>
+      <div class="sidebar-footer">
+        NEXUS AI · Versión 0.2<br>
+        Tus chats se guardan en este navegador.
       </div>
     </aside>
 
-    <section class="workspace">
-      <header>
-        <button
-          class="menu-button"
-          id="menu-button"
-          type="button"
-          aria-label="Abrir historial"
-        >☰</button>
-        <div class="header-title" id="header-title">Nuevo chat</div>
-        <div class="status">● En línea</div>
+    <div class="overlay" id="overlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="menu-button" id="menuButton" aria-label="Abrir menú">☰</button>
+          <div class="topbar-title" id="currentTitle">Nuevo chat</div>
+        </div>
+        <div class="status">● Sistema disponible</div>
       </header>
 
-      <main>
-        <section class="welcome" id="welcome">
-          <div class="orb"></div>
-          <h2>¿Qué vamos a <span>crear hoy?</span></h2>
-          <p>Soy NEXUS. Pregunta, aprende, imagina.<br />Empecemos por algo grande.</p>
-        </section>
+      <section class="chat" id="chat" aria-live="polite">
+        <div class="chat-inner" id="chatInner"></div>
+      </section>
 
-        <section id="chat" aria-live="polite" aria-label="Conversación"></section>
-
-        <div class="composer">
-          <form id="chat-form">
-            <textarea
-              id="message"
-              rows="1"
-              maxlength="4000"
-              placeholder="Escribe tu mensaje a NEXUS..."
-              aria-label="Tu mensaje"
-              required
-            ></textarea>
-            <button class="send" id="send" type="submit" aria-label="Enviar mensaje">↑</button>
-          </form>
-          <p class="hint">NEXUS puede equivocarse. Comprueba la información importante.</p>
-        </div>
-      </main>
-    </section>
+      <div class="composer-area">
+        <form class="composer" id="chatForm">
+          <textarea
+            id="messageInput"
+            placeholder="Escribe tu mensaje a NEXUS..."
+            rows="1"
+            maxlength="4000"
+            aria-label="Tu mensaje"
+            required
+          ></textarea>
+          <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
+        </form>
+        <div class="disclaimer">NEXUS puede cometer errores. Verifica la información importante.</div>
+      </div>
+    </main>
   </div>
 
   <script>
     const STORAGE_KEY = "nexus_ai_chats_v2";
 
-    const form = document.getElementById("chat-form");
-    const input = document.getElementById("message");
-    const send = document.getElementById("send");
-    const chat = document.getElementById("chat");
-    const welcome = document.getElementById("welcome");
-    const historyList = document.getElementById("history");
-    const headerTitle = document.getElementById("header-title");
+    const historyElement = document.getElementById("history");
+    const chatInner = document.getElementById("chatInner");
+    const chatElement = document.getElementById("chat");
+    const currentTitle = document.getElementById("currentTitle");
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
     const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("mobile-overlay");
+    const overlay = document.getElementById("overlay");
 
     let chats = loadChats();
-    let activeChatId = chats[0]?.id || null;
-    let isSending = false;
+    let activeChatId = null;
+    let sending = false;
 
     function loadChats() {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return [];
 
-        if (!Array.isArray(saved)) return [];
+        const parsed = JSON.parse(saved);
+        if (!Array.isArray(parsed)) return [];
 
-        return saved.filter(item =>
-          item &&
-          typeof item.id === "string" &&
-          typeof item.title === "string" &&
-          Array.isArray(item.messages)
-        ).map(item => ({
-          id: item.id,
-          title: item.title,
-          createdAt: Number(item.createdAt) || Date.now(),
-          updatedAt: Number(item.updatedAt) || Date.now(),
-          messages: item.messages.filter(message =>
-            message &&
-            ["user", "assistant"].includes(message.role) &&
-            typeof message.content === "string"
-          ).map(message => ({
-            role: message.role,
-            content: message.content,
-            error: Boolean(message.error)
-          }))
-        }));
+        return parsed.filter(chat =>
+          chat &&
+          typeof chat.id === "string" &&
+          typeof chat.title === "string" &&
+          Array.isArray(chat.messages)
+        );
       } catch (error) {
-        console.error("No se pudo leer el historial:", error);
+        console.error("No se pudo cargar el historial:", error);
         return [];
       }
     }
@@ -548,166 +481,81 @@
         return true;
       } catch (error) {
         console.error("No se pudo guardar el historial:", error);
-        alert("No se pudo guardar el historial. Puede que el almacenamiento esté lleno o desactivado.");
+        alert("No se pudo guardar el historial. Revisa el espacio disponible del navegador.");
         return false;
       }
     }
 
     function makeId() {
-      if (crypto.randomUUID) return crypto.randomUUID();
+      if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
       return Date.now().toString(36) + Math.random().toString(36).slice(2);
     }
 
-    function getActiveChat() {
-      return chats.find(item => item.id === activeChatId) || null;
-    }
-
     function createChat() {
-      if (isSending) return;
-
-      const newChat = {
+      const chat = {
         id: makeId(),
         title: "Nuevo chat",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        messages: []
+        messages: [],
+        updatedAt: Date.now()
       };
 
-      chats.unshift(newChat);
-      activeChatId = newChat.id;
+      chats.unshift(chat);
+      activeChatId = chat.id;
       saveChats();
       renderAll();
-      closeSidebar();
+      closeMenu();
       input.focus();
     }
 
-    function addMessageToChat(target, role, content, error = false) {
-      target.messages.push({ role, content, error });
-      target.updatedAt = Date.now();
-
-      if (role === "user" && target.title === "Nuevo chat") {
-        const firstLine = content.trim().split("\n")[0];
-        target.title = firstLine.length > 36
-          ? firstLine.slice(0, 36) + "…"
-          : firstLine;
-      }
-
-      chats.sort((a, b) => b.updatedAt - a.updatedAt);
-      saveChats();
+    function getActiveChat() {
+      return chats.find(chat => chat.id === activeChatId) || null;
     }
 
-    function renderMessages() {
-      chat.replaceChildren();
+    function openChat(id) {
+      if (sending) return;
+      if (!chats.some(chat => chat.id === id)) return;
 
-      const active = getActiveChat();
-      const messages = active?.messages || [];
-
-      welcome.hidden = messages.length > 0;
-      chat.hidden = messages.length === 0;
-
-      for (const message of messages) {
-        const bubble = document.createElement("div");
-        bubble.className =
-          "message " + message.role + (message.error ? " error" : "");
-        bubble.textContent = message.content;
-        chat.appendChild(bubble);
-      }
-
-      chat.scrollTop = chat.scrollHeight;
-      headerTitle.textContent = active?.title || "Nuevo chat";
-    }
-
-    function renderHistory() {
-      historyList.replaceChildren();
-
-      if (chats.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "history-empty";
-        empty.textContent = "Todavía no tienes conversaciones. Pulsa «Nuevo chat» para empezar.";
-        historyList.appendChild(empty);
-        return;
-      }
-
-      const sorted = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
-
-      for (const item of sorted) {
-        const row = document.createElement("div");
-        row.className = "history-item" +
-          (item.id === activeChatId ? " active" : "");
-
-        const openButton = document.createElement("button");
-        openButton.type = "button";
-        openButton.className = "open-chat";
-        openButton.title = item.title;
-
-        const title = document.createElement("span");
-        title.className = "chat-title";
-        title.textContent = item.title;
-
-        const date = document.createElement("span");
-        date.className = "chat-date";
-        date.textContent = new Date(item.updatedAt).toLocaleString("es-CO", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-
-        openButton.append(title, date);
-        openButton.addEventListener("click", () => {
-          if (isSending) return;
-          activeChatId = item.id;
-          renderAll();
-          closeSidebar();
-        });
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "delete-chat";
-        deleteButton.textContent = "×";
-        deleteButton.title = "Eliminar esta conversación";
-        deleteButton.setAttribute("aria-label", "Eliminar " + item.title);
-
-        deleteButton.addEventListener("click", () => {
-          deleteChat(item.id);
-        });
-
-        row.append(openButton, deleteButton);
-        historyList.appendChild(row);
-      }
-    }
-
-    function renderAll() {
-      renderHistory();
-      renderMessages();
+      activeChatId = id;
+      renderAll();
+      closeMenu();
     }
 
     function deleteChat(id) {
-      if (isSending) return;
+      if (sending && activeChatId === id) {
+        alert("Espera a que termine la respuesta antes de eliminar este chat.");
+        return;
+      }
 
-      const target = chats.find(item => item.id === id);
-      if (!target) return;
+      const chat = chats.find(item => item.id === id);
+      if (!chat) return;
 
-      if (!confirm('¿Eliminar la conversación "' + target.title + '"?')) return;
+      const ok = confirm(`¿Eliminar "${chat.title}"? Esta acción no se puede deshacer.`);
+      if (!ok) return;
 
       chats = chats.filter(item => item.id !== id);
 
       if (activeChatId === id) {
-        activeChatId = chats[0]?.id || null;
+        activeChatId = chats.length ? chats[0].id : null;
       }
 
       saveChats();
       renderAll();
     }
 
-    document.getElementById("delete-all").addEventListener("click", () => {
-      if (isSending) return;
-      if (chats.length === 0) {
-        alert("No hay conversaciones para eliminar.");
+    function clearAllChats() {
+      if (sending) {
+        alert("Espera a que termine la respuesta antes de borrar el historial.");
         return;
       }
 
-      if (!confirm("¿Seguro que quieres eliminar TODO el historial? Esta acción no se puede deshacer.")) {
+      if (!chats.length) {
+        alert("El historial ya está vacío.");
+        return;
+      }
+
+      if (!confirm("¿Seguro que quieres eliminar todos tus chats? No se pueden recuperar.")) {
         return;
       }
 
@@ -715,60 +563,225 @@
       activeChatId = null;
       saveChats();
       renderAll();
-    });
+    }
 
-    document.getElementById("new-chat").addEventListener("click", createChat);
+    function renderHistory() {
+      historyElement.replaceChildren();
 
-    function closeSidebar() {
+      if (!chats.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-history";
+        empty.textContent = "Tus conversaciones aparecerán aquí.";
+        historyElement.appendChild(empty);
+        return;
+      }
+
+      chats.forEach(chat => {
+        const item = document.createElement("div");
+        item.className = "history-item" + (chat.id === activeChatId ? " active" : "");
+
+        const open = document.createElement("button");
+        open.className = "history-open";
+        open.type = "button";
+        open.textContent = chat.title;
+        open.title = chat.title;
+        open.addEventListener("click", () => openChat(chat.id));
+
+        const remove = document.createElement("button");
+        remove.className = "delete-chat";
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.title = "Eliminar conversación";
+        remove.setAttribute("aria-label", "Eliminar " + chat.title);
+        remove.addEventListener("click", () => deleteChat(chat.id));
+
+        item.append(open, remove);
+        historyElement.appendChild(item);
+      });
+    }
+
+    function addMessage(role, content, isError = false) {
+      const wrapper = document.createElement("article");
+      wrapper.className = "message " + role + (isError ? " error" : "");
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = role === "user" ? "TÚ" : "N";
+
+      const body = document.createElement("div");
+      body.className = "message-body";
+
+      const name = document.createElement("div");
+      name.className = "message-name";
+      name.textContent = role === "user" ? "Tú" : "NEXUS";
+
+      const text = document.createElement("div");
+      text.className = "message-text";
+      text.textContent = content;
+
+      body.append(name, text);
+      wrapper.append(avatar, body);
+      chatInner.appendChild(wrapper);
+    }
+
+    function renderWelcome() {
+      const welcome = document.createElement("div");
+      welcome.className = "welcome";
+
+      const logo = document.createElement("div");
+      logo.className = "welcome-logo";
+      logo.textContent = "N";
+
+      const title = document.createElement("h2");
+      title.textContent = "¿Qué vamos a crear hoy?";
+
+      const description = document.createElement("p");
+      description.textContent = "Soy NEXUS, tu asistente de inteligencia artificial. Pregunta, aprende, programa o desarrolla tus ideas.";
+
+      const suggestions = document.createElement("div");
+      suggestions.className = "suggestions";
+
+      [
+        "Explícame algo difícil",
+        "Ayúdame a programar",
+        "Dame ideas creativas"
+      ].forEach(label => {
+        const button = document.createElement("button");
+        button.className = "suggestion";
+        button.type = "button";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          input.value = label;
+          input.focus();
+          resizeInput();
+        });
+        suggestions.appendChild(button);
+      });
+
+      welcome.append(logo, title, description, suggestions);
+      chatInner.appendChild(welcome);
+    }
+
+    function renderMessages() {
+      chatInner.replaceChildren();
+
+      const chat = getActiveChat();
+
+      if (!chat || chat.messages.length === 0) {
+        renderWelcome();
+        return;
+      }
+
+      chat.messages.forEach(message => {
+        addMessage(message.role, message.content, message.isError === true);
+      });
+
+      chatElement.scrollTop = chatElement.scrollHeight;
+    }
+
+    function renderAll() {
+      renderHistory();
+
+      const chat = getActiveChat();
+      currentTitle.textContent = chat ? chat.title : "Nuevo chat";
+
+      renderMessages();
+    }
+
+    function closeMenu() {
       sidebar.classList.remove("open");
       overlay.classList.remove("visible");
     }
 
-    document.getElementById("menu-button").addEventListener("click", () => {
-      sidebar.classList.toggle("open");
-      overlay.classList.toggle("visible", sidebar.classList.contains("open"));
-    });
+    function openMenu() {
+      sidebar.classList.add("open");
+      overlay.classList.add("visible");
+    }
 
-    overlay.addEventListener("click", closeSidebar);
-
-    input.addEventListener("input", () => {
+    function resizeInput() {
       input.style.height = "auto";
-      input.style.height = Math.min(input.scrollHeight, 150) + "px";
+      input.style.height = Math.min(input.scrollHeight, 180) + "px";
+    }
+
+    input.addEventListener("input", resizeInput);
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
     });
+
+    document.getElementById("newChatButton").addEventListener("click", createChat);
+    document.getElementById("clearAllButton").addEventListener("click", clearAllChats);
+    document.getElementById("menuButton").addEventListener("click", openMenu);
+    overlay.addEventListener("click", closeMenu);
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
 
       const message = input.value.trim();
-      if (!message || isSending) return;
+      if (!message || sending) return;
 
-      let active = getActiveChat();
-
-      if (!active) {
-        active = {
-          id: makeId(),
-          title: "Nuevo chat",
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          messages: []
-        };
-        chats.unshift(active);
-        activeChatId = active.id;
+      if (message.length > 4000) {
+        alert("El mensaje no puede superar los 4000 caracteres.");
+        return;
       }
 
-      addMessageToChat(active, "user", message);
-      renderAll();
+      if (!activeChatId || !getActiveChat()) {
+        const chat = {
+          id: makeId(),
+          title: message.slice(0, 38) + (message.length > 38 ? "..." : ""),
+          messages: [],
+          updatedAt: Date.now()
+        };
+
+        chats.unshift(chat);
+        activeChatId = chat.id;
+      }
+
+      const chat = getActiveChat();
+      if (!chat) return;
+
+      if (chat.messages.length === 0) {
+        chat.title = message.slice(0, 38) + (message.length > 38 ? "..." : "");
+      }
+
+      chat.messages.push({ role: "user", content: message });
+      chat.updatedAt = Date.now();
 
       input.value = "";
-      input.style.height = "auto";
-      isSending = true;
-      send.disabled = true;
+      resizeInput();
+      sending = true;
+      sendButton.disabled = true;
+      sendButton.textContent = "…";
 
-      const loading = document.createElement("div");
-      loading.className = "message assistant";
-      loading.textContent = "NEXUS está pensando...";
-      chat.appendChild(loading);
-      chat.scrollTop = chat.scrollHeight;
+      saveChats();
+      renderAll();
+      chatElement.scrollTop = chatElement.scrollHeight;
+
+      const loading = document.createElement("article");
+      loading.className = "message";
+      loading.id = "loadingMessage";
+
+      const loadingAvatar = document.createElement("div");
+      loadingAvatar.className = "avatar";
+      loadingAvatar.textContent = "N";
+
+      const loadingBody = document.createElement("div");
+      loadingBody.className = "message-body";
+
+      const loadingName = document.createElement("div");
+      loadingName.className = "message-name";
+      loadingName.textContent = "NEXUS";
+
+      const loadingText = document.createElement("div");
+      loadingText.className = "message-text";
+      loadingText.textContent = "Pensando...";
+
+      loadingBody.append(loadingName, loadingText);
+      loading.append(loadingAvatar, loadingBody);
+      chatInner.appendChild(loading);
 
       try {
         const response = await fetch("/api/chat", {
@@ -778,39 +791,43 @@
         });
 
         const data = await response.json().catch(() => ({}));
-        loading.remove();
 
         if (!response.ok) {
-          throw new Error(data.error || "No pude responder.");
+          throw new Error(data.error || "No pude obtener una respuesta.");
         }
 
         if (typeof data.reply !== "string" || !data.reply.trim()) {
-          throw new Error("La IA no devolvió una respuesta válida.");
+          throw new Error("NEXUS no devolvió una respuesta válida.");
         }
 
-        const current = chats.find(item => item.id === active.id);
-        if (current) {
-          addMessageToChat(current, "assistant", data.reply);
-        }
+        chat.messages.push({
+          role: "assistant",
+          content: data.reply.trim()
+        });
       } catch (error) {
-        loading.remove();
-
-        const current = chats.find(item => item.id === active.id);
-        if (current) {
-          addMessageToChat(
-            current,
-            "assistant",
-            error.message || "No se pudo conectar con NEXUS. Inténtalo otra vez.",
-            true
-          );
-        }
+        console.error("Error de NEXUS:", error);
+        chat.messages.push({
+          role: "assistant",
+          content: error.message || "Ocurrió un error. Inténtalo de nuevo.",
+          isError: true
+        });
       } finally {
-        isSending = false;
-        send.disabled = false;
+        chat.updatedAt = Date.now();
+        chats.sort((a, b) => b.updatedAt - a.updatedAt);
+        sending = false;
+        sendButton.disabled = false;
+        sendButton.textContent = "↑";
+
+        saveChats();
         renderAll();
+        chatElement.scrollTop = chatElement.scrollHeight;
         input.focus();
       }
     });
+
+    if (chats.length) {
+      activeChatId = chats[0].id;
+    }
 
     renderAll();
   </script>
