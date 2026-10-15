@@ -1,0 +1,9 @@
+{
+  "name": "nexus-ai",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-14",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}
