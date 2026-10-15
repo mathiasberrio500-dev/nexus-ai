@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -100,6 +99,23 @@
     }
 
     .new-chat:hover { background: #7665ff30; }
+
+    .memory-button {
+      width: 100%;
+      margin-top: 9px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      color: #dce0f3;
+      text-align: left;
+      transition: border-color .2s, background .2s;
+    }
+
+    .memory-button:hover {
+      border-color: var(--accent);
+      background: #7665ff17;
+    }
 
     .history-heading {
       display: flex;
@@ -470,6 +486,10 @@
         ＋ Nuevo chat
       </button>
 
+      <button class="memory-button" id="memoryButton" type="button">
+        🧠 Memoria personal
+      </button>
+
       <div class="history-heading">
         <span>Historial</span>
         <button class="small-button" id="clearAllButton" type="button">
@@ -480,7 +500,7 @@
       <div class="history" id="history"></div>
 
       <div class="sidebar-footer">
-        NEXUS AI · Versión 0.3<br>
+        NEXUS AI · Versión 0.4<br>
         Tus conversaciones se guardan en este navegador.
       </div>
     </aside>
@@ -535,6 +555,9 @@
     "use strict";
 
     const STORAGE_KEY = "nexus_ai_chats_v2";
+    const MEMORY_KEY = "nexus_ai_personal_memory_v1";
+    const MAX_MEMORY_LENGTH = 6000;
+    const MAX_MEMORY_ITEMS = 50;
     const MAX_MESSAGE_LENGTH = 4000;
     const MAX_CONTEXT_MESSAGES = 20;
     const MAX_CONTEXT_CHARS = 12000;
@@ -553,8 +576,101 @@
     let chats = loadChats();
     let activeChatId = chats[0]?.id || null;
     let sending = false;
+    let personalMemory = loadMemory();
 
-    function loadChats() {
+    function loadMemory() {
+      try {
+        const saved = localStorage.getItem(MEMORY_KEY);
+        if (!saved) return [];
+
+        const parsed = JSON.parse(saved);
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed
+          .filter(item => typeof item === "string" && item.trim())
+          .map(item => item.trim())
+          .slice(-MAX_MEMORY_ITEMS);
+      } catch (error) {
+        console.error("No se pudo cargar la memoria personal:", error);
+        return [];
+      }
+    }
+
+    function saveMemory() {
+      try {
+        localStorage.setItem(MEMORY_KEY, JSON.stringify(personalMemory));
+        return true;
+      } catch (error) {
+        console.error("No se pudo guardar la memoria personal:", error);
+        alert("No se pudo guardar la memoria. Revisa el espacio disponible del navegador.");
+        return false;
+      }
+    }
+
+    function getMemoryText() {
+      return personalMemory.join("\n").slice(0, MAX_MEMORY_LENGTH);
+    }
+
+    function manageMemory() {
+      const current = getMemoryText();
+      const edited = prompt(
+        "MEMORIA PERSONAL DE NEXUS\n\nCada recuerdo debe ir en una línea. Edita el texto para añadir o cambiar recuerdos; deja el campo vacío para borrar toda la memoria.",
+        current
+      );
+
+      if (edited === null) return;
+
+      const entries = edited
+        .split(/\r?\n/)
+        .map(item => item.trim())
+        .filter(Boolean);
+
+      const joined = entries.join("\n");
+
+      if (joined.length > MAX_MEMORY_LENGTH) {
+        alert("La memoria no puede superar los 6000 caracteres.");
+        return;
+      }
+
+      personalMemory = [...new Set(entries)].slice(-MAX_MEMORY_ITEMS);
+
+      if (saveMemory()) {
+        alert(
+          personalMemory.length
+            ? "Memoria personal guardada. NEXUS podrá usarla en tus chats nuevos."
+            : "Memoria personal borrada."
+        );
+      }
+    }
+
+    function rememberFromMessage(message) {
+      const pattern = /\b(?:recuerda(?:me)?\s+que|acu[eé]rdate\s+(?:de\s+)?que|guarda\s+en\s+memoria\s+que|no\s+olvides\s+que|memoriza\s+que)\s+([\s\S]+)/i;
+      const match = message.match(pattern);
+
+      if (!match || !match[1]) return false;
+
+      const fact = match[1].trim().replace(/[.!?]+$/, "");
+      if (!fact) return false;
+
+      const normalized = fact.toLocaleLowerCase("es");
+      const alreadySaved = personalMemory.some(
+        item => item.toLocaleLowerCase("es") === normalized
+      );
+
+      if (!alreadySaved) {
+        personalMemory.push(fact);
+        personalMemory = personalMemory.slice(-MAX_MEMORY_ITEMS);
+
+        while (getMemoryText().length > MAX_MEMORY_LENGTH && personalMemory.length) {
+          personalMemory.shift();
+        }
+
+        saveMemory();
+      }
+
+      return true;
+    }
+        function loadChats() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return [];
@@ -911,30 +1027,30 @@
     document.getElementById("newChatButton")
       .addEventListener("click", createChat);
 
+    document.getElementById("memoryButton")
+      .addEventListener("click", manageMemory);
+
     document.getElementById("clearAllButton")
       .addEventListener("click", clearAllChats);
 
     document.getElementById("menuButton")
       .addEventListener("click", openMenu);
 
-    overlay.addEventListener("click", closeMenu);
-
-    form.addEventListener("submit", async event => {
+    overlay.addEventListener("click", closeMenu); 
+        form.addEventListener("submit", async event => {
       event.preventDefault();
 
+      if (sending) return;
+
       const message = input.value.trim();
+      if (!message) return;
 
-      if (!message || sending) return;
+      let chat = getActiveChat();
 
-      if (message.length > MAX_MESSAGE_LENGTH) {
-        alert("El mensaje no puede superar los 4000 caracteres.");
-        return;
-      }
-
-      if (!activeChatId || !getActiveChat()) {
-        const chat = {
+      if (!chat) {
+        chat = {
           id: makeId(),
-          title: makeTitle(message),
+          title: "Nuevo chat",
           messages: [],
           updatedAt: Date.now()
         };
@@ -943,14 +1059,10 @@
         activeChatId = chat.id;
       }
 
-      const chat = getActiveChat();
-      if (!chat) return;
-
       if (chat.messages.length === 0) {
         chat.title = makeTitle(message);
       }
 
-      // Add the user's message before building the context.
       chat.messages.push({
         role: "user",
         content: message
@@ -958,36 +1070,37 @@
 
       chat.updatedAt = Date.now();
 
-      input.value = "";
-      resizeInput();
-
-      setSendingState(true);
+      rememberFromMessage(message);
       saveChats();
       renderAll();
+
+      input.value = "";
+      resizeInput();
+      setSendingState(true);
+
+      const thinking = document.createElement("article");
+      thinking.className = "message assistant";
+      thinking.id = "thinkingMessage";
+
+      const thinkingAvatar = document.createElement("div");
+      thinkingAvatar.className = "avatar";
+      thinkingAvatar.textContent = "N";
+
+      const thinkingBody = document.createElement("div");
+      thinkingBody.className = "message-body";
+
+      const thinkingName = document.createElement("div");
+      thinkingName.className = "message-name";
+      thinkingName.textContent = "NEXUS";
+
+      const thinkingText = document.createElement("div");
+      thinkingText.className = "message-text";
+      thinkingText.textContent = "Pensando...";
+
+      thinkingBody.append(thinkingName, thinkingText);
+      thinking.append(thinkingAvatar, thinkingBody);
+      chatInner.appendChild(thinking);
       chatElement.scrollTop = chatElement.scrollHeight;
-
-      const loading = document.createElement("article");
-      loading.className = "message";
-      loading.id = "loadingMessage";
-
-      const loadingAvatar = document.createElement("div");
-      loadingAvatar.className = "avatar";
-      loadingAvatar.textContent = "N";
-
-      const loadingBody = document.createElement("div");
-      loadingBody.className = "message-body";
-
-      const loadingName = document.createElement("div");
-      loadingName.className = "message-name";
-      loadingName.textContent = "NEXUS";
-
-      const loadingText = document.createElement("div");
-      loadingText.className = "message-text";
-      loadingText.textContent = "Pensando...";
-
-      loadingBody.append(loadingName, loadingText);
-      loading.append(loadingAvatar, loadingBody);
-      chatInner.appendChild(loading);
 
       try {
         const messages = buildConversationContext(chat.messages);
@@ -999,52 +1112,63 @@
           },
           body: JSON.stringify({
             message,
-            messages
+            messages,
+            memory: getMemoryText()
           })
         });
 
-        const data = await response.json().catch(() => ({}));
+        const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.error || "No pude obtener una respuesta."
+            data.error || "No se pudo obtener una respuesta."
           );
         }
 
-        if (
-          typeof data.reply !== "string" ||
-          !data.reply.trim()
-        ) {
-          throw new Error("NEXUS no devolvió una respuesta válida.");
+        const answer =
+          typeof data.reply === "string" ? data.reply :
+          typeof data.response === "string" ? data.response :
+          typeof data.message === "string" ? data.message :
+          "";
+
+        if (!answer) {
+          throw new Error("NEXUS devolvió una respuesta vacía.");
         }
 
         chat.messages.push({
           role: "assistant",
-          content: data.reply.trim()
+          content: answer
         });
+
+        chat.updatedAt = Date.now();
+        saveChats();
       } catch (error) {
-        console.error("Error de NEXUS:", error);
+        console.error("Error al hablar con NEXUS:", error);
 
         chat.messages.push({
           role: "assistant",
-          content:
-            error.message || "Ocurrió un error. Inténtalo de nuevo.",
+          content: "Error: " +
+            (error.message || "No se pudo conectar con NEXUS."),
           isError: true
         });
-      } finally {
+
         chat.updatedAt = Date.now();
-        chats.sort((a, b) => b.updatedAt - a.updatedAt);
-
-        setSendingState(false);
         saveChats();
+      } finally {
+        setSendingState(false);
         renderAll();
-
-        chatElement.scrollTop = chatElement.scrollHeight;
         input.focus();
       }
     });
 
+    // Restore the saved chats and initialize NEXUS.
+    chats = loadChats();
+
+    if (chats.length > 0) {
+      activeChatId = chats[0].id;
+    } else {
+      activeChatId = null;
+    }
+
     renderAll();
-  </script>
-</body>
-</html>
+    resizeInput();
