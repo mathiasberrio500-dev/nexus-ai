@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#090b12">
+  <meta name="description" content="NEXUS AI, tu espacio inteligente.">
   <title>NEXUS AI</title>
 
   <style>
@@ -32,8 +33,13 @@
       font-family: Inter, system-ui, -apple-system, sans-serif;
     }
 
-    button, input, textarea { font: inherit; }
+    button, textarea { font: inherit; }
     button { cursor: pointer; }
+
+    button:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
 
     .app {
       display: grid;
@@ -62,6 +68,7 @@
       place-items: center;
       width: 40px;
       height: 40px;
+      flex-shrink: 0;
       border-radius: 13px;
       background: linear-gradient(135deg, #a398ff, #6251e9);
       color: white;
@@ -70,8 +77,16 @@
       box-shadow: 0 5px 24px #7665ff30;
     }
 
-    .brand h1 { margin: 0; font-size: 19px; letter-spacing: 1px; }
-    .brand small { color: var(--muted); font-size: 11px; }
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+      letter-spacing: 1px;
+    }
+
+    .brand small {
+      color: var(--muted);
+      font-size: 11px;
+    }
 
     .new-chat {
       width: 100%;
@@ -149,7 +164,10 @@
       color: var(--muted);
     }
 
-    .delete-chat:hover { background: #ff667d18; color: var(--danger); }
+    .delete-chat:hover {
+      background: #ff667d18;
+      color: var(--danger);
+    }
 
     .empty-history {
       padding: 12px 7px;
@@ -183,8 +201,28 @@
       background: #0b0e17;
     }
 
-    .topbar-title { font-size: 14px; font-weight: 650; }
-    .status { color: #7fe0b0; font-size: 12px; }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .topbar-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .status {
+      flex-shrink: 0;
+      color: #7fe0b0;
+      font-size: 12px;
+    }
+
+    .status.busy { color: #c3baff; }
 
     .menu-button {
       display: none;
@@ -232,8 +270,17 @@
       font-weight: 900;
     }
 
-    .welcome h2 { margin: 0 0 12px; font-size: clamp(25px, 4vw, 36px); }
-    .welcome p { max-width: 450px; margin: 0; color: var(--muted); line-height: 1.7; }
+    .welcome h2 {
+      margin: 0 0 12px;
+      font-size: clamp(25px, 4vw, 36px);
+    }
+
+    .welcome p {
+      max-width: 450px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
 
     .suggestions {
       display: flex;
@@ -279,9 +326,25 @@
       color: white;
     }
 
-    .message-body { min-width: 0; flex: 1; padding-top: 3px; }
-    .message-name { margin-bottom: 7px; font-size: 12px; font-weight: 750; }
-    .message-text { color: #e0e4f2; line-height: 1.75; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .message-body {
+      min-width: 0;
+      flex: 1;
+      padding-top: 3px;
+    }
+
+    .message-name {
+      margin-bottom: 7px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .message-text {
+      color: #e0e4f2;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
     .message.error .message-text { color: #ff9aaa; }
 
     .composer-area {
@@ -332,7 +395,11 @@
     }
 
     .send-button:hover { background: var(--accent2); }
-    .send-button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .send-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
 
     .disclaimer {
       width: min(800px, 100%);
@@ -376,6 +443,14 @@
       .welcome { padding: 35px 5px; }
       .suggestions { gap: 7px; }
       .suggestion { font-size: 11px; }
+      .status { font-size: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
@@ -391,18 +466,22 @@
         </div>
       </div>
 
-      <button class="new-chat" id="newChatButton">＋ Nuevo chat</button>
+      <button class="new-chat" id="newChatButton" type="button">
+        ＋ Nuevo chat
+      </button>
 
       <div class="history-heading">
         <span>Historial</span>
-        <button class="small-button" id="clearAllButton">Borrar todo</button>
+        <button class="small-button" id="clearAllButton" type="button">
+          Borrar todo
+        </button>
       </div>
 
       <div class="history" id="history"></div>
 
       <div class="sidebar-footer">
-        NEXUS AI · Versión 0.2<br>
-        Tus chats se guardan en este navegador.
+        NEXUS AI · Versión 0.3<br>
+        Tus conversaciones se guardan en este navegador.
       </div>
     </aside>
 
@@ -410,11 +489,16 @@
 
     <main class="main">
       <header class="topbar">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="menu-button" id="menuButton" aria-label="Abrir menú">☰</button>
+        <div class="topbar-left">
+          <button
+            class="menu-button"
+            id="menuButton"
+            type="button"
+            aria-label="Abrir menú"
+          >☰</button>
           <div class="topbar-title" id="currentTitle">Nuevo chat</div>
         </div>
-        <div class="status">● Sistema disponible</div>
+        <div class="status" id="status">● Sistema disponible</div>
       </header>
 
       <section class="chat" id="chat" aria-live="polite">
@@ -431,15 +515,29 @@
             aria-label="Tu mensaje"
             required
           ></textarea>
-          <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
+
+          <button
+            class="send-button"
+            id="sendButton"
+            type="submit"
+            aria-label="Enviar mensaje"
+          >↑</button>
         </form>
-        <div class="disclaimer">NEXUS puede cometer errores. Verifica la información importante.</div>
+
+        <div class="disclaimer">
+          NEXUS puede cometer errores. Verifica la información importante.
+        </div>
       </div>
     </main>
   </div>
 
   <script>
+    "use strict";
+
     const STORAGE_KEY = "nexus_ai_chats_v2";
+    const MAX_MESSAGE_LENGTH = 4000;
+    const MAX_CONTEXT_MESSAGES = 20;
+    const MAX_CONTEXT_CHARS = 12000;
 
     const historyElement = document.getElementById("history");
     const chatInner = document.getElementById("chatInner");
@@ -450,9 +548,10 @@
     const sendButton = document.getElementById("sendButton");
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
+    const statusElement = document.getElementById("status");
 
     let chats = loadChats();
-    let activeChatId = null;
+    let activeChatId = chats[0]?.id || null;
     let sending = false;
 
     function loadChats() {
@@ -468,7 +567,20 @@
           typeof chat.id === "string" &&
           typeof chat.title === "string" &&
           Array.isArray(chat.messages)
-        );
+        ).map(chat => ({
+          id: chat.id,
+          title: chat.title,
+          updatedAt: Number(chat.updatedAt) || Date.now(),
+          messages: chat.messages.filter(message =>
+            message &&
+            ["user", "assistant"].includes(message.role) &&
+            typeof message.content === "string"
+          ).map(message => ({
+            role: message.role,
+            content: message.content,
+            ...(message.isError ? { isError: true } : {})
+          }))
+        })).sort((a, b) => b.updatedAt - a.updatedAt);
       } catch (error) {
         console.error("No se pudo cargar el historial:", error);
         return [];
@@ -481,7 +593,9 @@
         return true;
       } catch (error) {
         console.error("No se pudo guardar el historial:", error);
-        alert("No se pudo guardar el historial. Revisa el espacio disponible del navegador.");
+        alert(
+          "No se pudo guardar el historial. Revisa el espacio disponible del navegador."
+        );
         return false;
       }
     }
@@ -490,10 +604,19 @@
       if (typeof crypto !== "undefined" && crypto.randomUUID) {
         return crypto.randomUUID();
       }
-      return Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+      return Date.now().toString(36) +
+        Math.random().toString(36).slice(2);
+    }
+
+    function makeTitle(message) {
+      const title = message.replace(/\s+/g, " ").trim();
+      return title.length > 38 ? title.slice(0, 38) + "..." : title;
     }
 
     function createChat() {
+      if (sending) return;
+
       const chat = {
         id: makeId(),
         title: "Nuevo chat",
@@ -503,6 +626,7 @@
 
       chats.unshift(chat);
       activeChatId = chat.id;
+
       saveChats();
       renderAll();
       closeMenu();
@@ -531,13 +655,16 @@
       const chat = chats.find(item => item.id === id);
       if (!chat) return;
 
-      const ok = confirm(`¿Eliminar "${chat.title}"? Esta acción no se puede deshacer.`);
-      if (!ok) return;
+      if (!confirm(
+        `¿Eliminar "${chat.title}"? Esta acción no se puede deshacer.`
+      )) {
+        return;
+      }
 
       chats = chats.filter(item => item.id !== id);
 
       if (activeChatId === id) {
-        activeChatId = chats.length ? chats[0].id : null;
+        activeChatId = chats[0]?.id || null;
       }
 
       saveChats();
@@ -555,12 +682,15 @@
         return;
       }
 
-      if (!confirm("¿Seguro que quieres eliminar todos tus chats? No se pueden recuperar.")) {
+      if (!confirm(
+        "¿Seguro que quieres eliminar todos tus chats? No se pueden recuperar."
+      )) {
         return;
       }
 
       chats = [];
       activeChatId = null;
+
       saveChats();
       renderAll();
     }
@@ -576,15 +706,18 @@
         return;
       }
 
-      chats.forEach(chat => {
+      for (const chat of chats) {
         const item = document.createElement("div");
-        item.className = "history-item" + (chat.id === activeChatId ? " active" : "");
+
+        item.className = "history-item" +
+          (chat.id === activeChatId ? " active" : "");
 
         const open = document.createElement("button");
         open.className = "history-open";
         open.type = "button";
         open.textContent = chat.title;
         open.title = chat.title;
+        open.disabled = sending;
         open.addEventListener("click", () => openChat(chat.id));
 
         const remove = document.createElement("button");
@@ -593,16 +726,18 @@
         remove.textContent = "×";
         remove.title = "Eliminar conversación";
         remove.setAttribute("aria-label", "Eliminar " + chat.title);
+        remove.disabled = sending && activeChatId === chat.id;
         remove.addEventListener("click", () => deleteChat(chat.id));
 
         item.append(open, remove);
         historyElement.appendChild(item);
-      });
+      }
     }
 
     function addMessage(role, content, isError = false) {
       const wrapper = document.createElement("article");
-      wrapper.className = "message " + role + (isError ? " error" : "");
+      wrapper.className =
+        "message " + role + (isError ? " error" : "");
 
       const avatar = document.createElement("div");
       avatar.className = "avatar";
@@ -636,7 +771,9 @@
       title.textContent = "¿Qué vamos a crear hoy?";
 
       const description = document.createElement("p");
-      description.textContent = "Soy NEXUS, tu asistente de inteligencia artificial. Pregunta, aprende, programa o desarrolla tus ideas.";
+      description.textContent =
+        "Soy NEXUS, tu asistente de inteligencia artificial. " +
+        "Pregunta, aprende, programa o desarrolla tus ideas.";
 
       const suggestions = document.createElement("div");
       suggestions.className = "suggestions";
@@ -650,11 +787,13 @@
         button.className = "suggestion";
         button.type = "button";
         button.textContent = label;
+
         button.addEventListener("click", () => {
           input.value = label;
           input.focus();
           resizeInput();
         });
+
         suggestions.appendChild(button);
       });
 
@@ -673,7 +812,11 @@
       }
 
       chat.messages.forEach(message => {
-        addMessage(message.role, message.content, message.isError === true);
+        addMessage(
+          message.role,
+          message.content,
+          message.isError === true
+        );
       });
 
       chatElement.scrollTop = chatElement.scrollHeight;
@@ -703,6 +846,59 @@
       input.style.height = Math.min(input.scrollHeight, 180) + "px";
     }
 
+    function setSendingState(value) {
+      sending = value;
+      sendButton.disabled = value;
+      sendButton.textContent = value ? "…" : "↑";
+      input.disabled = value;
+
+      statusElement.textContent = value
+        ? "● NEXUS está pensando..."
+        : "● Sistema disponible";
+
+      statusElement.classList.toggle("busy", value);
+      renderHistory();
+    }
+
+    // Build a bounded context, keeping the newest message.
+    function buildConversationContext(messages) {
+      const validMessages = messages.filter(item =>
+        !item.isError &&
+        ["user", "assistant"].includes(item.role) &&
+        typeof item.content === "string" &&
+        item.content.trim()
+      );
+
+      const selected = [];
+      let totalChars = 0;
+
+      for (
+        let i = validMessages.length - 1;
+        i >= 0 && selected.length < MAX_CONTEXT_MESSAGES;
+        i--
+      ) {
+        const item = validMessages[i];
+        const content = item.content.trim();
+
+        if (
+          selected.length > 0 &&
+          totalChars + content.length > MAX_CONTEXT_CHARS
+        ) {
+          break;
+        }
+
+        // The current user message is already limited to 4000 chars.
+        selected.unshift({
+          role: item.role,
+          content
+        });
+
+        totalChars += content.length;
+      }
+
+      return selected;
+    }
+
     input.addEventListener("input", resizeInput);
 
     input.addEventListener("keydown", event => {
@@ -712,18 +908,25 @@
       }
     });
 
-    document.getElementById("newChatButton").addEventListener("click", createChat);
-    document.getElementById("clearAllButton").addEventListener("click", clearAllChats);
-    document.getElementById("menuButton").addEventListener("click", openMenu);
+    document.getElementById("newChatButton")
+      .addEventListener("click", createChat);
+
+    document.getElementById("clearAllButton")
+      .addEventListener("click", clearAllChats);
+
+    document.getElementById("menuButton")
+      .addEventListener("click", openMenu);
+
     overlay.addEventListener("click", closeMenu);
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
 
       const message = input.value.trim();
+
       if (!message || sending) return;
 
-      if (message.length > 4000) {
+      if (message.length > MAX_MESSAGE_LENGTH) {
         alert("El mensaje no puede superar los 4000 caracteres.");
         return;
       }
@@ -731,7 +934,7 @@
       if (!activeChatId || !getActiveChat()) {
         const chat = {
           id: makeId(),
-          title: message.slice(0, 38) + (message.length > 38 ? "..." : ""),
+          title: makeTitle(message),
           messages: [],
           updatedAt: Date.now()
         };
@@ -744,18 +947,21 @@
       if (!chat) return;
 
       if (chat.messages.length === 0) {
-        chat.title = message.slice(0, 38) + (message.length > 38 ? "..." : "");
+        chat.title = makeTitle(message);
       }
 
-      chat.messages.push({ role: "user", content: message });
+      // Add the user's message before building the context.
+      chat.messages.push({
+        role: "user",
+        content: message
+      });
+
       chat.updatedAt = Date.now();
 
       input.value = "";
       resizeInput();
-      sending = true;
-      sendButton.disabled = true;
-      sendButton.textContent = "…";
 
+      setSendingState(true);
       saveChats();
       renderAll();
       chatElement.scrollTop = chatElement.scrollHeight;
@@ -784,19 +990,31 @@
       chatInner.appendChild(loading);
 
       try {
+        const messages = buildConversationContext(chat.messages);
+
         const response = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message })
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message,
+            messages
+          })
         });
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(data.error || "No pude obtener una respuesta.");
+          throw new Error(
+            data.error || "No pude obtener una respuesta."
+          );
         }
 
-        if (typeof data.reply !== "string" || !data.reply.trim()) {
+        if (
+          typeof data.reply !== "string" ||
+          !data.reply.trim()
+        ) {
           throw new Error("NEXUS no devolvió una respuesta válida.");
         }
 
@@ -806,28 +1024,25 @@
         });
       } catch (error) {
         console.error("Error de NEXUS:", error);
+
         chat.messages.push({
           role: "assistant",
-          content: error.message || "Ocurrió un error. Inténtalo de nuevo.",
+          content:
+            error.message || "Ocurrió un error. Inténtalo de nuevo.",
           isError: true
         });
       } finally {
         chat.updatedAt = Date.now();
         chats.sort((a, b) => b.updatedAt - a.updatedAt);
-        sending = false;
-        sendButton.disabled = false;
-        sendButton.textContent = "↑";
 
+        setSendingState(false);
         saveChats();
         renderAll();
+
         chatElement.scrollTop = chatElement.scrollHeight;
         input.focus();
       }
     });
-
-    if (chats.length) {
-      activeChatId = chats[0].id;
-    }
 
     renderAll();
   </script>
