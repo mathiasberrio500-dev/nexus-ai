@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -670,7 +671,8 @@
 
       return true;
     }
-        function loadChats() {
+
+    function loadChats() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return [];
@@ -709,9 +711,7 @@
         return true;
       } catch (error) {
         console.error("No se pudo guardar el historial:", error);
-        alert(
-          "No se pudo guardar el historial. Revisa el espacio disponible del navegador."
-        );
+        alert("No se pudo guardar el historial. Revisa el espacio disponible del navegador.");
         return false;
       }
     }
@@ -771,9 +771,7 @@
       const chat = chats.find(item => item.id === id);
       if (!chat) return;
 
-      if (!confirm(
-        `¿Eliminar "${chat.title}"? Esta acción no se puede deshacer.`
-      )) {
+      if (!confirm(`¿Eliminar "${chat.title}"? Esta acción no se puede deshacer.`)) {
         return;
       }
 
@@ -798,9 +796,7 @@
         return;
       }
 
-      if (!confirm(
-        "¿Seguro que quieres eliminar todos tus chats? No se pueden recuperar."
-      )) {
+      if (!confirm("¿Seguro que quieres eliminar todos tus chats? No se pueden recuperar.")) {
         return;
       }
 
@@ -852,8 +848,7 @@
 
     function addMessage(role, content, isError = false) {
       const wrapper = document.createElement("article");
-      wrapper.className =
-        "message " + role + (isError ? " error" : "");
+      wrapper.className = "message " + role + (isError ? " error" : "");
 
       const avatar = document.createElement("div");
       avatar.className = "avatar";
@@ -976,7 +971,6 @@
       renderHistory();
     }
 
-    // Build a bounded context, keeping the newest message.
     function buildConversationContext(messages) {
       const validMessages = messages.filter(item =>
         !item.isError &&
@@ -1003,7 +997,6 @@
           break;
         }
 
-        // The current user message is already limited to 4000 chars.
         selected.unshift({
           role: item.role,
           content
@@ -1027,8 +1020,10 @@
     document.getElementById("newChatButton")
       .addEventListener("click", createChat);
 
-    document.getElementById("memoryButton")
-      .addEventListener("click", manageMemory);
+    const memoryButton = document.getElementById("memoryButton");
+    if (memoryButton) {
+      memoryButton.addEventListener("click", manageMemory);
+    }
 
     document.getElementById("clearAllButton")
       .addEventListener("click", clearAllChats);
@@ -1036,13 +1031,14 @@
     document.getElementById("menuButton")
       .addEventListener("click", openMenu);
 
-    overlay.addEventListener("click", closeMenu); 
-        form.addEventListener("submit", async event => {
+    overlay.addEventListener("click", closeMenu);
+
+    form.addEventListener("submit", async event => {
       event.preventDefault();
 
       if (sending) return;
 
-      const message = input.value.trim();
+      const message = input.value.trim().slice(0, MAX_MESSAGE_LENGTH);
       if (!message) return;
 
       let chat = getActiveChat();
@@ -1117,11 +1113,20 @@
           })
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            "El servidor no devolvió JSON válido. Revisa la ruta /api/chat y el Worker."
+          );
+        }
 
         if (!response.ok) {
           throw new Error(
-            data.error || "No se pudo obtener una respuesta."
+            data.error || data.message || `Error del servidor (${response.status}).`
           );
         }
 
@@ -1131,8 +1136,10 @@
           typeof data.message === "string" ? data.message :
           "";
 
-        if (!answer) {
-          throw new Error("NEXUS devolvió una respuesta vacía.");
+        if (!answer.trim()) {
+          throw new Error(
+            "NEXUS devolvió una respuesta vacía. Comprueba el formato de respuesta de src/index.js."
+          );
         }
 
         chat.messages.push({
@@ -1147,8 +1154,7 @@
 
         chat.messages.push({
           role: "assistant",
-          content: "Error: " +
-            (error.message || "No se pudo conectar con NEXUS."),
+          content: "Error: " + (error.message || "No se pudo conectar con NEXUS."),
           isError: true
         });
 
@@ -1161,7 +1167,7 @@
       }
     });
 
-    // Restore the saved chats and initialize NEXUS.
+    // Restaurar los chats guardados e iniciar NEXUS.
     chats = loadChats();
 
     if (chats.length > 0) {
@@ -1172,3 +1178,6 @@
 
     renderAll();
     resizeInput();
+  </script>
+</body>
+</html>
