@@ -1,0 +1,44 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS AI</title>
+<style>
+body{margin:0;background:#0b0612;color:#f5edff;font:16px system-ui;display:grid;place-items:center;min-height:100vh}
+main{width:min(700px,92%);height:85vh;display:flex;flex-direction:column;background:#130d20;border:1px solid #49305e;border-radius:20px;overflow:hidden}
+header{padding:20px;border-bottom:1px solid #49305e;color:#c084fc;font-weight:bold;font-size:22px}
+#messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.msg{padding:12px 15px;border-radius:14px;background:#211531;white-space:pre-wrap;overflow-wrap:anywhere;max-width:85%}
+.user{align-self:flex-end;background:#51227a}
+form{display:flex;gap:8px;padding:12px;border-top:1px solid #49305e}
+textarea{flex:1;resize:none;background:#0b0612;color:white;border:1px solid #49305e;border-radius:10px;padding:12px;font:inherit}
+button{background:#9333ea;color:white;border:0;border-radius:10px;padding:0 18px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<header>✦ NEXUS</header>
+<div id="messages"><div class="msg">Ey, soy NEXUS. ¿Qué hacemos hoy?</div></div>
+<form id="form"><textarea id="input" maxlength="4000" placeholder="Escribe tu mensaje..."></textarea><button id="send">Enviar</button></form>
+</main>
+<script>
+const form=document.querySelector("#form"),input=document.querySelector("#input"),messages=document.querySelector("#messages"),send=document.querySelector("#send");
+function add(text,who=""){const el=document.createElement("div");el.className="msg "+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el}
+form.addEventListener("submit",async e=>{
+e.preventDefault();const message=input.value.trim();if(!message||send.disabled)return;
+add(message,"user");input.value="";send.disabled=true;
+const waiting=add("Pensando...");
+try{
+const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message})});
+const data=await r.json();
+if(!r.ok)throw Error(data.error||"Error del servidor");
+waiting.textContent=data.reply;
+}catch(e){waiting.textContent="Error: "+e.message}
+finally{send.disabled=false;input.focus()}
+});
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
+</script>
+</body>
+</html>
