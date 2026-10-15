@@ -13,6 +13,7 @@ export default {
       }
 
       let body;
+
       try {
         body = await request.json();
       } catch {
@@ -20,6 +21,7 @@ export default {
       }
 
       const message = body?.message;
+
       if (
         typeof message !== "string" ||
         !message.trim() ||
@@ -30,13 +32,61 @@ export default {
         }, 400);
       }
 
+      // Recuperar y validar el contexto de la conversación.
+      let conversation = [];
+
+      if (Array.isArray(body.messages)) {
+        let totalChars = 0;
+
+        for (const item of body.messages.slice(-20)) {
+          if (
+            !item ||
+            !["user", "assistant"].includes(item.role) ||
+            typeof item.content !== "string" ||
+            !item.content.trim() ||
+            item.content.length > 4000
+          ) {
+            return json({
+              error: "El historial de mensajes no es válido."
+            }, 400);
+          }
+
+          totalChars += item.content.length;
+
+          if (totalChars > 12000) {
+            return json({
+              error: "La conversación es demasiado larga. Inicia un chat nuevo o resume los mensajes."
+            }, 413);
+          }
+
+          conversation.push({
+            role: item.role,
+            content: item.content.trim()
+          });
+        }
+      }
+
+      // Compatibilidad con clientes antiguos.
+      const last = conversation[conversation.length - 1];
+
+      if (
+        !last ||
+        last.role !== "user" ||
+        last.content !== message.trim()
+      ) {
+        conversation.push({
+          role: "user",
+          content: message.trim()
+        });
+      }
+
       try {
         const response = await fetch(
           "https://api.groq.com/openai/v1/chat/completions",
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${env.GROQ_API_KEY}`,
+              Authorization: "Bearer " + env.GROQ_API_KEY,
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -45,9 +95,9 @@ export default {
                 {
                   role: "system",
                   content:
-                    "Te llamas NEXUS. Eres una IA útil, cercana, clara y respetuosa. Responde en el idioma del usuario."
+                    "Te llamas NEXUS. Eres una IA útil, cercana, clara y respetuosa. Responde en el idioma del usuario. Usa los mensajes anteriores como contexto, mantén la continuidad y no inventes recuerdos que no aparezcan en el historial."
                 },
-                { role: "user", content: message.trim() }
+                ...conversation
               ],
               temperature: 0.7,
               max_tokens: 700
@@ -59,20 +109,27 @@ export default {
 
         if (!response.ok) {
           console.error("Groq:", response.status, data);
+
           return json({
             error: "No pude obtener una respuesta. Inténtalo de nuevo."
           }, 502);
         }
 
         const reply = data?.choices?.[0]?.message?.content;
+
         if (typeof reply !== "string" || !reply.trim()) {
-          return json({ error: "La IA no devolvió una respuesta." }, 502);
+          return json({
+            error: "La IA no devolvió una respuesta."
+          }, 502);
         }
 
         return json({ reply });
       } catch (error) {
         console.error("Error:", error);
-        return json({ error: "Ocurrió un error al responder." }, 500);
+
+        return json({
+          error: "Ocurrió un error al responder."
+        }, 500);
       }
     }
 
